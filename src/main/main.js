@@ -11,7 +11,7 @@ function createWindow() {
     width: 1300,
     height: 850,
     webPreferences: {
-      preload: path.join(__dirname, '../preload/preload.js'),
+      preload: path.resolve(__dirname, '../preload/preload.js'),
       nodeIntegration: false,
       contextIsolation: true
     }
@@ -130,6 +130,7 @@ ipcMain.handle('delete-mission', (event, missionId) => {
 });
 
 ipcMain.handle('use-help-ticket', (event, purpose) => {
+  console.log('[DEBUG] use-help-ticket triggered with:', purpose);
   const progress = storage.loadUserProgress();
   
   if (progress.helpTickets <= 0) {

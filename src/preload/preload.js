@@ -1,3 +1,4 @@
+console.log('[DEBUG] preload loaded ✅');
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
@@ -11,5 +12,6 @@ contextBridge.exposeInMainWorld('api', {
   deleteMission: (missionId) => ipcRenderer.invoke('delete-mission', missionId),
   useHelpTicket: (purpose) => ipcRenderer.invoke('use-help-ticket', purpose),
   useTutorialTicket: (purpose) => ipcRenderer.invoke('use-tutorial-ticket', purpose),
-  writeInsight: (data) => ipcRenderer.invoke('write-insight', data)
+  writeInsight: (data) => ipcRenderer.invoke('write-insight', data),
+  // openPopup: (title, htmlFile, width, height) => ipcRenderer.invoke('open-popup', { title, htmlFile, width, height }),
 });
