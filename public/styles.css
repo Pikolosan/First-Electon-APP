@@ -299,3 +299,29 @@ tbody tr.selected td {
 ::-webkit-scrollbar-thumb:hover {
   background: #4a5662;
 }
+
+.mission-details {
+  background-color: #2c3038;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.detail-row {
+  padding: 10px 0;
+  border-bottom: 1px solid #37474f;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row strong {
+  color: #64b5f6;
+  display: inline-block;
+  width: 120px;
+}
+
+.detail-row:not(:has(strong)) {
+  color: #b0bec5;
+}

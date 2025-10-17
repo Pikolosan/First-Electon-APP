@@ -4,8 +4,9 @@
   "description": "SoloCraft - Independent Project Builder Desktop App",
   "main": "src/main/main.js",
   "scripts": {
-    "start": "electron . --no-sandbox --disable-gpu",
-    "dev": "electron . --dev --no-sandbox --disable-gpu"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "electron": "electron . --no-sandbox --disable-gpu"
   },
   "keywords": [
     "electron",
@@ -17,5 +18,9 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^33.4.11"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   }
 }
