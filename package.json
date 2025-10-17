@@ -1,0 +1,21 @@
+{
+  "name": "solocraft-electron",
+  "version": "1.0.0",
+  "description": "SoloCraft - Independent Project Builder Desktop App",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox --disable-gpu",
+    "dev": "electron . --dev --no-sandbox --disable-gpu"
+  },
+  "keywords": [
+    "electron",
+    "desktop",
+    "gamification",
+    "project-management"
+  ],
+  "author": "SoloCraft Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11"
+  }
+}

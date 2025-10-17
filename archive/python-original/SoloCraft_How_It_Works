@@ -1,0 +1,323 @@
+# SoloCraft: How It Works - Detailed Technical Guide
+
+## Overview
+
+SoloCraft is a desktop gamification application built with Python and Tkinter that helps users build projects independently while managing their reliance on external help. The application uses a mission-based system combined with a ticket economy and insight debt tracking to encourage self-reliance and learning.
+
+## Core Architecture
+
+### 1. Application Structure
+
+```
+SoloCraft/
+├── solocraft_gui.py      # Main GUI application (Tkinter interface)
+├── data_models.py        # Data structures (Mission, UserProgress, InsightDebt)
+├── storage_manager.py    # JSON file persistence layer
+├── run_solocraft.py      # VNC display setup for Replit environment
+├── solocraft_data/       # Data storage directory
+│   ├── missions.json     # Mission data persistence
+│   ├── user_progress.json # User XP, level, tickets
+│   └── insight_debts.json # Insight debt tracking
+└── replit.md            # Project documentation
+```
+
+### 2. Data Models
+
+#### Mission Class (`data_models.py`)
+- **Purpose**: Represents a project task with gamification elements
+- **Key Fields**:
+  - `title`, `description`: Basic mission information
+  - `difficulty`: Easy/Medium/Hard (affects recommended XP rewards)
+  - `constraints`: Self-imposed limitations to increase challenge
+  - `rewards`: XP points awarded on completion
+  - `punishment`: Penalty applied if mission is failed
+  - `completed`/`failed`: Mission status tracking
+  - `created_at`, `completed_at`, `failed_at`: Timestamp tracking
+
+#### UserProgress Class (`data_models.py`)
+- **Purpose**: Tracks user's gamification state and resources
+- **Key Fields**:
+  - `xp`, `level`: Experience points and calculated level (100 XP per level)
+  - `help_tickets`, `tutorial_tickets`: Limited assistance resources
+  - `last_ticket_reset`: Weekly ticket replenishment tracking
+  - `badges`: Achievement system (extensible)
+- **Key Methods**:
+  - `add_xp()`: Awards XP and handles level-up calculations
+  - `apply_punishment()`: Processes punishment text and applies penalties
+  - `should_reset_tickets()`: Checks if weekly reset is due
+
+#### InsightDebt Class (`data_models.py`)
+- **Purpose**: Tracks learning obligations created by using help
+- **Key Fields**:
+  - `ticket_type`: "Help" or "Tutorial" - type of assistance used
+  - `used_for`: Description of what help was needed for
+  - `cleared`: Whether the debt has been paid with learning insights
+  - `insight_entry`: The actual learning content written by user
+
+### 3. Storage System
+
+The `StorageManager` class handles all data persistence using JSON files:
+
+#### File Operations
+- **Atomic Updates**: Each save operation completely rewrites the JSON file
+- **Error Handling**: Graceful fallbacks to empty states if files are corrupted
+- **Auto-Creation**: Creates data directory and files on first run
+
+#### Data Flow
+1. **Load**: JSON files → Python objects via `from_dict()` class methods
+2. **Modify**: In-memory object manipulation
+3. **Save**: Python objects → JSON files via `to_dict()` instance methods
+
+## Core Game Mechanics
+
+### 1. Mission System
+
+#### Mission Lifecycle
+1. **Creation**: User defines mission with title, description, difficulty, constraints, rewards, and optional punishment
+2. **Active State**: Mission appears in the mission list with "Active" status
+3. **Completion Path**: 
+   - User clicks "✓ Complete" button
+   - System awards XP and potentially levels up user
+   - Mission marked as completed with timestamp
+4. **Failure Path**: 
+   - User clicks "✗ Fail" button
+   - System applies punishment (XP loss, ticket loss, etc.)
+   - Mission marked as failed with timestamp
+5. **Deletion**: User can delete missions entirely (removes from system)
+
+#### Mission Status Display
+- **Active**: Green text, available for completion or failure
+- **Completed**: Shows completion status and awards earned
+- **Failed**: Shows failure status and punishments applied
+
+### 2. Ticket Economy
+
+#### Ticket Types
+- **Help Tickets (3 per week)**: For getting assistance with specific problems
+- **Tutorial Tickets (2 per week)**: For accessing learning resources
+
+#### Usage Flow
+1. User clicks "💡 Use Help Ticket" or "📚 Use Tutorial Ticket"
+2. System prompts for description of what help is needed
+3. Ticket count decreases by 1
+4. InsightDebt object created in "Outstanding" state
+5. User must write insight to clear the debt
+
+#### Weekly Reset
+- Tickets reset every 7 days from `last_ticket_reset` timestamp
+- Reset notification shown to user on application startup
+- Automatic reset prevents ticket hoarding
+
+### 3. Insight Debt System
+
+#### Purpose
+Forces users to document what they learned when using help, creating accountability and encouraging retention.
+
+#### Debt Lifecycle
+1. **Creation**: Automatic when help/tutorial ticket is used
+2. **Outstanding State**: Debt appears in insight debt list
+3. **Clearing**: User writes detailed insight about what they learned
+4. **Cleared State**: Debt moves to historical insights view
+
+#### Insight Tracking
+- All cleared debts become searchable learning history
+- Insights include timestamp and context of original help request
+- Builds personal knowledge base over time
+
+### 4. Punishment System
+
+#### Punishment Processing
+The `apply_punishment()` method in UserProgress parses free-text punishment descriptions:
+
+##### XP Loss Punishments
+- **Pattern Detection**: Looks for "xp" or "experience" keywords
+- **Quantity Extraction**: Uses regex to find numbers (e.g., "15 xp" → 15 XP loss)
+- **Default Fallback**: 10 XP loss if "xp" mentioned without number
+- **Level Recalculation**: Automatically drops user level if XP falls below threshold
+- **Minimum Bound**: XP cannot go below 0
+
+##### Ticket Loss Punishments
+- **Type-Specific**: Can target "help ticket" or "tutorial ticket" specifically
+- **Generic Fallback**: "ticket" alone removes from available pool (help first, then tutorial)
+- **Availability Check**: Only removes tickets if user has them available
+
+##### Default Punishment
+- **Fallback Behavior**: If no recognizable punishment pattern found, applies 5 XP loss
+- **User Feedback**: Returns list of applied effects for display in UI
+
+#### Example Punishment Texts
+- `"Lose 20 XP"` → 20 XP deducted, possible level drop
+- `"Lose 1 help ticket and 10 XP"` → Both penalties applied
+- `"Pay attention next time"` → Default 5 XP loss applied
+
+## User Interface
+
+### 1. Layout Structure
+
+The GUI uses a grid-based layout with three main sections:
+
+#### Header (Statistics Bar)
+- **Position**: Top row, spans full width
+- **Contents**: XP, Level, Help Tickets, Tutorial Tickets
+- **Styling**: Card-like appearance with modern blue accent colors
+- **Updates**: Real-time refresh after any XP/ticket changes
+
+#### Left Panel (Mission Management)
+- **Mission Controls**: Create, Complete, Fail, Delete buttons
+- **Mission List**: Treeview showing title, difficulty, XP reward, status
+- **Interaction**: Single-click selection, button actions on selected mission
+
+#### Right Panel (Tickets & Insights)
+- **Ticket Usage**: Buttons to consume help/tutorial tickets
+- **Insight Debt List**: Shows outstanding learning obligations
+- **Insight Management**: Write new insights, view historical insights
+
+### 2. Dialog Systems
+
+#### Mission Creation Dialog
+- **Modal Window**: Blocks main window interaction until completed
+- **Input Fields**: Title, description, difficulty dropdown, constraints, rewards, punishment
+- **Validation**: Ensures required fields are filled before saving
+- **Result Handling**: Creates Mission object and refreshes display
+
+#### Insight Writing Dialog
+- **Debt Selection**: Dropdown to choose which debt to clear
+- **Text Entry**: Large text area for detailed insight writing
+- **Persistence**: Saves insight and marks debt as cleared
+
+### 3. Visual Design
+
+#### Color Scheme
+- **Primary Background**: Dark blue-grey (`#1a1d23`)
+- **Secondary Panels**: Lighter grey (`#242731`)
+- **Cards/Sections**: Medium grey (`#2c3038`)
+- **Accent Color**: Cool blue (`#64b5f6`)
+- **Text Colors**: White primary, light grey secondary, muted grey
+
+#### Modern Styling
+- **Flat Design**: No 3D effects, clean lines
+- **Icon Integration**: Unicode emoji icons for visual clarity
+- **Consistent Spacing**: 10-20px padding throughout
+- **Hover Effects**: Button color changes for interactivity
+
+## Data Persistence
+
+### 1. File Format
+All data stored as JSON for human readability and easy debugging.
+
+### 2. Storage Patterns
+
+#### Mission Storage (`missions.json`)
+```json
+[
+  {
+    "id": "uuid-string",
+    "title": "Learn React Hooks",
+    "description": "Build a todo app using only hooks",
+    "difficulty": "Medium",
+    "constraints": "No class components allowed",
+    "rewards": 50,
+    "punishment": "Lose 20 XP if not done by Friday",
+    "created_at": "2025-09-15T10:30:00",
+    "completed": false,
+    "completed_at": null,
+    "failed": false,
+    "failed_at": null
+  }
+]
+```
+
+#### User Progress Storage (`user_progress.json`)
+```json
+{
+  "xp": 250,
+  "level": 3,
+  "help_tickets": 2,
+  "tutorial_tickets": 1,
+  "last_ticket_reset": "2025-09-15T00:00:00",
+  "badges": []
+}
+```
+
+#### Insight Debt Storage (`insight_debts.json`)
+```json
+[
+  {
+    "id": "uuid-string",
+    "ticket_type": "Help",
+    "used_for": "Understanding React state management",
+    "created_at": "2025-09-15T14:20:00",
+    "cleared": true,
+    "insight_entry": "State should be immutable. Use setState with functions for updates based on previous state.",
+    "cleared_at": "2025-09-15T15:45:00"
+  }
+]
+```
+
+### 3. Backup and Recovery
+- **File-Based**: Easy to backup entire `solocraft_data/` directory
+- **Human-Readable**: JSON format allows manual editing if needed
+- **Graceful Degradation**: Application creates fresh files if any are missing/corrupted
+
+## Desktop Environment Integration
+
+### 1. Application Launcher
+
+The `run_solocraft.py` script provides a simple launcher for the desktop application:
+
+#### Features
+- **Direct Launch**: Starts the Tkinter GUI application directly
+- **Error Handling**: Provides clear error messages for common issues
+- **Cross-Platform**: Works on Windows, macOS, and Linux with GUI support
+
+#### Usage
+Users can start the application by running:
+```bash
+python run_solocraft.py
+```
+or directly:
+```bash
+python solocraft_gui.py
+```
+
+### 2. System Integration
+- **Standalone Operation**: No special server or environment setup required
+- **Local GUI**: Native desktop application using system's display server
+- **Persistent Data**: JSON files persist in local file system
+
+## Error Handling and Edge Cases
+
+### 1. Data Validation
+- **Mission Creation**: Validates required fields before saving
+- **XP Calculations**: Prevents negative XP values
+- **Ticket Usage**: Checks availability before consumption
+- **File Operations**: Handles missing/corrupted JSON files gracefully
+
+### 2. State Consistency
+- **Mutual Exclusion**: Missions cannot be both completed and failed
+- **Status Checks**: UI buttons verify mission state before actions
+- **Timestamp Integrity**: All state changes include proper timestamps
+
+### 3. User Experience
+- **Confirmation Dialogs**: Destructive actions require user confirmation
+- **Clear Feedback**: Success/error messages for all operations
+- **Input Validation**: Prevents invalid data entry at UI level
+
+## Performance Characteristics
+
+### 1. Memory Usage
+- **Lightweight**: All data held in memory as simple Python objects
+- **Small Footprint**: JSON files typically under 1KB each
+- **No Caching**: Data reloaded fresh from files on each operation
+
+### 2. I/O Operations
+- **File-Per-Operation**: Each save/load operation reads/writes entire file
+- **JSON Parsing**: Built-in Python JSON library for serialization
+- **Atomic Writes**: Complete file replacement ensures data consistency
+
+### 3. Scalability Considerations
+- **Data Size**: System designed for personal use (hundreds of missions max)
+- **Performance**: Linear scan algorithms acceptable for expected data volumes
+- **Extensibility**: Architecture supports additional data types and features
+
+This technical overview provides the foundation for understanding how SoloCraft works internally and how its various systems interact to create the gamified project management experience.

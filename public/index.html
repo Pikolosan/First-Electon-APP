@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>SoloCraft - Independent Project Builder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1 class="title">SoloCraft</h1>
+      <div class="stats-card">
+        <div class="stat-item">
+          <span class="stat-label">XP:</span>
+          <span class="stat-value" id="xp-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Level:</span>
+          <span class="stat-value" id="level-value">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Help Tickets:</span>
+          <span class="stat-value" id="help-tickets-value">3</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Tutorial Tickets:</span>
+          <span class="stat-value" id="tutorial-tickets-value">2</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="missions-panel">
+        <div class="panel-header">
+          <h2>🎯 Missions</h2>
+          <div class="button-group">
+            <button class="btn btn-primary" id="create-mission-btn">+ Create Mission</button>
+            <button class="btn btn-secondary" id="complete-mission-btn">✓ Complete</button>
+            <button class="btn btn-secondary" id="fail-mission-btn">✗ Fail</button>
+            <button class="btn btn-secondary" id="delete-mission-btn">🗑 Delete</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="missions-table">
+            <thead>
+              <tr>
+                <th>📋 Mission Title</th>
+                <th>🎚 Level</th>
+                <th>⭐ XP</th>
+                <th>📊 Status</th>
+              </tr>
+            </thead>
+            <tbody id="missions-tbody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="tickets-section">
+          <h2>🎫 Use Tickets</h2>
+          <div class="button-group">
+            <button class="btn btn-primary" id="use-help-ticket-btn">💡 Use Help Ticket</button>
+            <button class="btn btn-secondary" id="use-tutorial-ticket-btn">📚 Use Tutorial Ticket</button>
+          </div>
+        </section>
+
+        <section class="debt-section">
+          <h2>📝 Insight Debt</h2>
+          <div class="button-group">
+            <button class="btn btn-primary" id="write-insight-btn">✍ Write Insight</button>
+            <button class="btn btn-secondary" id="view-insights-btn">👁 View Insights</button>
+          </div>
+          <div class="table-container">
+            <table class="debt-table">
+              <thead>
+                <tr>
+                  <th>🎫 Type</th>
+                  <th>📊 Used For</th>
+                  <th>📊 Status</th>
+                </tr>
+              </thead>
+              <tbody id="debt-tbody">
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="../src/renderer/renderer.js"></script>
+</body>
+</html>
