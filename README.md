@@ -15,7 +15,7 @@
 
 ---
 
-## 📖 Overview
+<h2 id="overview">📖 Overview</h2>
 
 SoloCraft is an Electron-based desktop application designed to help developers and creators build projects independently with minimal external assistance. Through a unique combination of mission-based task management, limited help resources, and mandatory learning documentation, SoloCraft encourages self-reliance while providing structured support.
 
@@ -23,7 +23,7 @@ SoloCraft is an Electron-based desktop application designed to help developers a
 
 ---
 
-## ✨ Features
+<h2 id="features">✨ Features</h2>
 
 ### 🎯 Mission System
 - **Create project missions** with customizable difficulty levels (Easy, Medium, Hard)
@@ -52,7 +52,7 @@ SoloCraft is an Electron-based desktop application designed to help developers a
 
 ---
 
-## 🚀 Installation
+<h2 id="installation">🚀 Installation</h2>
 
 ### Prerequisites
 
@@ -86,7 +86,7 @@ npm run dev
 
 ---
 
-## 💻 Usage
+<h2 id="usage">💻 Usage</h2>
 
 ### Creating Your First Mission
 
@@ -125,7 +125,7 @@ Click **"👁 View Insights"** to review your learning history and past reflecti
 
 ---
 
-## 🏗️ Project Structure
+<h2 id="project-structure">🏗️ Project Structure</h2>
 
 ```
 solocraft-electron/
@@ -152,7 +152,7 @@ solocraft-electron/
 
 ---
 
-## 📚 Documentation
+<h2 id="documentation">📚 Documentation</h2>
 
 ### Data Models
 
@@ -231,7 +231,7 @@ All data is stored locally in JSON files within the `solocraft_data/` directory.
 
 ---
 
-## 🔧 Development
+<h2 id="development">🔧 Development</h2>
 
 ### Technology Stack
 
