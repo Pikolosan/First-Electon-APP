@@ -244,6 +244,14 @@ tbody tr.selected td {
   color: white;
   font-family: inherit;
   font-size: 14px;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #64b5f6;
+  background-color: #363a45;
 }
 
 .form-group textarea {

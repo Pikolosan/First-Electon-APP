@@ -81,6 +81,13 @@ function showModal(title, content) {
   
   modalBody.innerHTML = `<h3>${title}</h3>${content}`;
   modal.style.display = 'block';
+  
+  setTimeout(() => {
+    const firstInput = modal.querySelector('input, textarea, select');
+    if (firstInput) {
+      firstInput.focus();
+    }
+  }, 100);
 }
 
 function closeModal() {
