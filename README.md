@@ -26,10 +26,11 @@ SoloCraft is an Electron-based desktop application designed to help developers a
 <h2 id="features">✨ Features</h2>
 
 ### 🎯 Mission System
+- Usable for **multiple projects** together
 - **Create project missions** with customizable difficulty levels (Easy, Medium, Hard)
 - **Define constraints** to challenge yourself and improve problem-solving skills
 - **Set XP rewards** based on mission complexity
-- **Optional punishment system** for failed missions (XP loss, ticket penalties)
+- **Custom punishment system** for failed missions (XP loss, ticket penalties)
 - **Track mission status**: Active, Completed, or Failed
 
 ### 🎫 Limited Help Tickets
