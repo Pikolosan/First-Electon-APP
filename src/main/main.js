@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const StorageManager = require('./storageManager');
-const { Mission, InsightDebt } = require('./dataModels');
+const { Project, Mission, InsightDebt } = require('./dataModels');
 
 let mainWindow;
 const storage = new StorageManager();
@@ -13,7 +13,8 @@ function createWindow() {
     webPreferences: {
       preload: path.resolve(__dirname, '../preload/preload.js'),
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      sandbox: false
     }
   });
 
@@ -29,11 +30,17 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  const userProgress = storage.loadUserProgress();
+  const projects = storage.loadProjects();
   
-  if (userProgress.shouldResetTickets()) {
-    userProgress.resetTickets();
-    storage.saveUserProgress(userProgress);
+  projects.forEach(project => {
+    if (project.shouldResetTickets()) {
+      project.resetTickets();
+      storage.saveProject(project);
+    }
+  });
+
+  if (storage.getCurrentProjectId() === null && projects.length > 0) {
+    storage.setCurrentProjectId(projects[0].id);
   }
 
   createWindow();
@@ -52,7 +59,14 @@ app.on('activate', () => {
 });
 
 ipcMain.handle('get-user-progress', () => {
-  return storage.loadUserProgress().toJSON();
+  const progress = storage.loadUserProgress();
+  const currentProject = storage.getCurrentProject();
+  
+  return {
+    ...progress.toJSON(),
+    helpTickets: currentProject ? currentProject.getAvailableHelpTickets() : 0,
+    tutorialTickets: currentProject ? currentProject.getAvailableTutorialTickets() : 0
+  };
 });
 
 ipcMain.handle('get-missions', () => {
@@ -71,13 +85,20 @@ ipcMain.handle('get-cleared-debts', () => {
 });
 
 ipcMain.handle('create-mission', (event, missionData) => {
+  const currentProject = storage.getCurrentProject();
+  
+  if (!currentProject) {
+    return { success: false, message: 'No project selected' };
+  }
+
   const mission = new Mission(
     missionData.title,
     missionData.description,
     missionData.difficulty,
     missionData.constraints,
     missionData.rewards,
-    missionData.punishment
+    missionData.punishment,
+    currentProject.id
   );
   storage.saveMission(mission);
   return { success: true };
@@ -131,14 +152,18 @@ ipcMain.handle('delete-mission', (event, missionId) => {
 
 ipcMain.handle('use-help-ticket', (event, purpose) => {
   console.log('[DEBUG] use-help-ticket triggered with:', purpose);
-  const progress = storage.loadUserProgress();
+  const currentProject = storage.getCurrentProject();
   
-  if (progress.helpTickets <= 0) {
-    return { success: false, message: 'No help tickets remaining' };
+  if (!currentProject) {
+    return { success: false, message: 'No project selected' };
   }
   
-  progress.useHelpTicket();
-  storage.saveUserProgress(progress);
+  if (currentProject.getAvailableHelpTickets() <= 0) {
+    return { success: false, message: 'No help tickets remaining for this project' };
+  }
+  
+  currentProject.useHelpTicket();
+  storage.saveProject(currentProject);
   
   const debt = new InsightDebt('Help', purpose);
   storage.saveInsightDebt(debt);
@@ -147,14 +172,18 @@ ipcMain.handle('use-help-ticket', (event, purpose) => {
 });
 
 ipcMain.handle('use-tutorial-ticket', (event, purpose) => {
-  const progress = storage.loadUserProgress();
+  const currentProject = storage.getCurrentProject();
   
-  if (progress.tutorialTickets <= 0) {
-    return { success: false, message: 'No tutorial tickets remaining' };
+  if (!currentProject) {
+    return { success: false, message: 'No project selected' };
   }
   
-  progress.useTutorialTicket();
-  storage.saveUserProgress(progress);
+  if (currentProject.getAvailableTutorialTickets() <= 0) {
+    return { success: false, message: 'No tutorial tickets remaining for this project' };
+  }
+  
+  currentProject.useTutorialTicket();
+  storage.saveProject(currentProject);
   
   const debt = new InsightDebt('Tutorial', purpose);
   storage.saveInsightDebt(debt);
@@ -173,4 +202,66 @@ ipcMain.handle('write-insight', (event, { debtId, insightText }) => {
   }
   
   return { success: false, message: 'Debt not found or already cleared' };
+});
+ipcMain.handle('get-projects', () => {
+  const projects = storage.loadProjects();
+  return projects.map(p => p.toJSON());
+});
+
+ipcMain.handle('get-current-project', () => {
+  const project = storage.getCurrentProject();
+  return project ? project.toJSON() : null;
+});
+
+ipcMain.handle('create-project', (event, projectData) => {
+  const project = new Project(
+    projectData.name,
+    projectData.description,
+    projectData.helpTicketLimit,
+    projectData.tutorialTicketLimit
+  );
+  storage.saveProject(project);
+  return { success: true, projectId: project.id };
+});
+
+ipcMain.handle('update-project', (event, projectData) => {
+  const projects = storage.loadProjects();
+  const project = projects.find(p => p.id === projectData.id);
+  
+  if (!project) {
+    return { success: false, message: 'Project not found' };
+  }
+  
+  project.name = projectData.name || project.name;
+  project.description = projectData.description !== undefined ? projectData.description : project.description;
+  project.helpTicketLimit = projectData.helpTicketLimit !== undefined ? projectData.helpTicketLimit : project.helpTicketLimit;
+  project.tutorialTicketLimit = projectData.tutorialTicketLimit !== undefined ? projectData.tutorialTicketLimit : project.tutorialTicketLimit;
+  
+  storage.saveProject(project);
+  return { success: true };
+});
+
+ipcMain.handle('set-current-project', (event, projectId) => {
+  storage.setCurrentProjectId(projectId);
+  return { success: true };
+});
+
+ipcMain.handle('delete-project', (event, projectId) => {
+  const projects = storage.loadProjects();
+  
+  if (projects.length <= 1) {
+    return { success: false, message: 'Cannot delete the last project' };
+  }
+  
+  const currentId = storage.getCurrentProjectId();
+  storage.deleteProject(projectId);
+  
+  if (currentId === projectId) {
+    const remainingProjects = storage.loadProjects();
+    if (remainingProjects.length > 0) {
+      storage.setCurrentProjectId(remainingProjects[0].id);
+    }
+  }
+  
+  return { success: true };
 });

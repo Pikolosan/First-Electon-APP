@@ -6,8 +6,87 @@ class Difficulty {
   static HARD = 'Hard';
 }
 
+class Project {
+  constructor(name, description = '', helpTicketLimit = 3, tutorialTicketLimit = 2, projectId = null) {
+    this.id = projectId || randomUUID();
+    this.name = name;
+    this.description = description;
+    this.helpTicketLimit = helpTicketLimit;
+    this.tutorialTicketLimit = tutorialTicketLimit;
+    this.helpTicketsUsed = 0;
+    this.tutorialTicketsUsed = 0;
+    this.lastTicketReset = new Date().toISOString();
+    this.createdAt = new Date().toISOString();
+  }
+
+  getAvailableHelpTickets() {
+    return Math.max(0, this.helpTicketLimit - this.helpTicketsUsed);
+  }
+
+  getAvailableTutorialTickets() {
+    return Math.max(0, this.tutorialTicketLimit - this.tutorialTicketsUsed);
+  }
+
+  useHelpTicket() {
+    if (this.getAvailableHelpTickets() > 0) {
+      this.helpTicketsUsed += 1;
+      return true;
+    }
+    return false;
+  }
+
+  useTutorialTicket() {
+    if (this.getAvailableTutorialTickets() > 0) {
+      this.tutorialTicketsUsed += 1;
+      return true;
+    }
+    return false;
+  }
+
+  shouldResetTickets() {
+    const lastReset = new Date(this.lastTicketReset);
+    const daysSinceReset = (new Date() - lastReset) / (1000 * 60 * 60 * 24);
+    return daysSinceReset >= 7;
+  }
+
+  resetTickets() {
+    this.helpTicketsUsed = 0;
+    this.tutorialTicketsUsed = 0;
+    this.lastTicketReset = new Date().toISOString();
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      helpTicketLimit: this.helpTicketLimit,
+      tutorialTicketLimit: this.tutorialTicketLimit,
+      helpTicketsUsed: this.helpTicketsUsed,
+      tutorialTicketsUsed: this.tutorialTicketsUsed,
+      lastTicketReset: this.lastTicketReset,
+      createdAt: this.createdAt
+    };
+  }
+
+  static fromJSON(data) {
+    const project = new Project(
+      data.name,
+      data.description,
+      data.helpTicketLimit,
+      data.tutorialTicketLimit,
+      data.id
+    );
+    project.helpTicketsUsed = data.helpTicketsUsed || 0;
+    project.tutorialTicketsUsed = data.tutorialTicketsUsed || 0;
+    project.lastTicketReset = data.lastTicketReset || new Date().toISOString();
+    project.createdAt = data.createdAt || new Date().toISOString();
+    return project;
+  }
+}
+
 class Mission {
-  constructor(title, description, difficulty, constraints, rewards, punishment = null, missionId = null) {
+  constructor(title, description, difficulty, constraints, rewards, punishment = null, projectId = null, missionId = null) {
     this.id = missionId || randomUUID();
     this.title = title;
     this.description = description;
@@ -15,6 +94,7 @@ class Mission {
     this.constraints = constraints;
     this.rewards = parseInt(rewards);
     this.punishment = punishment;
+    this.projectId = projectId;
     this.createdAt = new Date().toISOString();
     this.completed = false;
     this.completedAt = null;
@@ -41,6 +121,7 @@ class Mission {
       constraints: this.constraints,
       rewards: this.rewards,
       punishment: this.punishment,
+      projectId: this.projectId,
       createdAt: this.createdAt,
       completed: this.completed,
       completedAt: this.completedAt,
@@ -57,6 +138,7 @@ class Mission {
       data.constraints,
       data.rewards,
       data.punishment,
+      data.projectId,
       data.id
     );
     mission.createdAt = data.createdAt;
@@ -236,4 +318,4 @@ class UserProgress {
   }
 }
 
-module.exports = { Difficulty, Mission, InsightDebt, UserProgress };
+module.exports = { Difficulty, Project, Mission, InsightDebt, UserProgress };

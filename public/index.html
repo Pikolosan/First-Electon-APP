@@ -10,7 +10,15 @@
 <body>
   <div class="app-container">
     <header class="header">
-      <h1 class="title">SoloCraft</h1>
+      <div class="header-left">
+        <h1 class="title">SoloCraft</h1>
+        <div class="project-selector">
+          <label for="project-select">Project:</label>
+          <select id="project-select" class="project-dropdown"></select>
+          <button class="btn btn-small btn-primary" id="create-project-btn">+ New</button>
+          <button class="btn btn-small btn-secondary" id="manage-project-btn">⚙ Settings</button>
+        </div>
+      </div>
       <div class="stats-card">
         <div class="stat-item">
           <span class="stat-label">XP:</span>
@@ -37,6 +45,7 @@
           <h2>🎯 Missions</h2>
           <div class="button-group">
             <button class="btn btn-primary" id="create-mission-btn">+ Create Mission</button>
+            <button class="btn btn-secondary" id="view-details-btn">👁 View Details</button>
             <button class="btn btn-secondary" id="complete-mission-btn">✓ Complete</button>
             <button class="btn btn-secondary" id="fail-mission-btn">✗ Fail</button>
             <button class="btn btn-secondary" id="delete-mission-btn">🗑 Delete</button>

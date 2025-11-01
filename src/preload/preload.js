@@ -13,5 +13,10 @@ contextBridge.exposeInMainWorld('api', {
   useHelpTicket: (purpose) => ipcRenderer.invoke('use-help-ticket', purpose),
   useTutorialTicket: (purpose) => ipcRenderer.invoke('use-tutorial-ticket', purpose),
   writeInsight: (data) => ipcRenderer.invoke('write-insight', data),
-  // openPopup: (title, htmlFile, width, height) => ipcRenderer.invoke('open-popup', { title, htmlFile, width, height }),
+  getProjects: () => ipcRenderer.invoke('get-projects'),
+  getCurrentProject: () => ipcRenderer.invoke('get-current-project'),
+  createProject: (projectData) => ipcRenderer.invoke('create-project', projectData),
+  updateProject: (projectData) => ipcRenderer.invoke('update-project', projectData),
+  setCurrentProject: (projectId) => ipcRenderer.invoke('set-current-project', projectId),
+  deleteProject: (projectId) => ipcRenderer.invoke('delete-project', projectId),
 });
