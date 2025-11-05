@@ -130,25 +130,31 @@ Click **"👁 View Insights"** to review your learning history and past reflecti
 
 ```
 solocraft-electron/
-├── src/
-│   ├── main/                      # Electron main process
-│   │   ├── main.js               # Application entry point & lifecycle
-│   │   ├── dataModels.js         # Mission, InsightDebt, UserProgress classes
-│   │   └── storageManager.js     # JSON file persistence layer
-│   └── preload/
-│       └── preload.js            # Secure IPC bridge between main & renderer
-├── public/                        # Frontend assets
-│   ├── index.html                # Main application UI
-│   ├── renderer.js               # UI logic and event handlers
-│   └── styles.css                # Application styling
-├── solocraft_data/               # User data (auto-created)
-│   ├── missions.json             # Mission records
-│   ├── insight_debts.json        # Debt tracking
-│   └── user_progress.json        # XP, level, tickets
-├── archive/                       # Original Python version
-│   └── python-original/
-├── package.json                   # Project configuration
-└── README.md                      # This file
+|   .gitignore
+|   package-lock.json
+|   package.json
+|   README.md
+|   
++---public
+|       index.html
+|       renderer.js
+|       styles.css
+|       
++---solocraft_data
+|       insight_debts.json
+|       missions.json
+|       projects.json
+|       settings.json
+|       user_progress.json
+|       
+\---src
+    +---main
+    |       dataModels.js
+    |       main.js
+    |       storageManager.js
+    |       
+    \---preload
+            preload.js
 ```
 
 ---
@@ -296,6 +302,64 @@ SoloCraft follows Electron's standard architecture:
 ### Mission/Debt Tables Not Updating
 - Refresh the view by switching tabs or restarting
 - Check console for IPC communication errors
+
+---
+
+## ⚙️ Tips & Personalization
+
+### 🧩 Adjusting Level-Up Difficulty
+
+By default, SoloCraft awards 1 level for every 100 XP earned.
+If you’d like to make leveling up harder or slower, you can easily adjust the XP threshold to suit your personal growth pace.
+
+### 🔧 How to Modify XP Requirements
+
+1. Open the file:
+```
+src/main/dataModels.js
+```
+
+2. Find the UserProgress class and the function:
+```
+addXP(amount) {
+  this.xp += amount;
+  const newLevel = Math.floor(this.xp / 100) + 1; // ← default: 100 XP per level
+  if (newLevel > this.level) {
+    this.level = newLevel;
+    return true;
+  }
+  return false;
+}
+```
+
+3. To make level-ups harder, increase the number 100.
+For example:
+```
+const newLevel = Math.floor(this.xp / 200) + 1; // 200 XP per level
+```
+or:
+```
+const newLevel = Math.floor(this.xp / 500) + 1; // 500 XP per level
+```
+### 🧠 Optional: Progressive Difficulty
+
+If you prefer each level to require more XP than the last, replace the calculation with:
+```
+const xpNeeded = 100 * Math.pow(1.5, this.level - 1); // 100, 150, 225, etc.
+if (this.xp >= xpNeeded) {
+  this.level++;
+  return true;
+}
+```
+This introduces a gradual challenge curve — perfect for those who want a slower, more rewarding progression.
+
+---
+
+## 🪟 Dialog Behavior Tip
+
+When a dialog box (like “Create Mission” or “Write Insight”) opens, some operating systems may briefly shift focus away from the main SoloCraft window.
+If this happens, simply press Alt + Tab (or your system’s window switch shortcut) to return to the app.
+This ensures you can interact with the dialog immediately and continue your workflow smoothly.
 
 ---
 
