@@ -21,6 +21,15 @@ SoloCraft is an Electron-based desktop application designed to help developers a
 
 **Philosophy**: Learn by doing. When you need help, you invest in your future knowledge by documenting what you learned.
 
+## 📸 Screenshots
+
+<details>
+    <summary><b>🏠 Homepage</b></summary>
+    <img width="1656" height="1079" alt="Screenshot 2025-11-01 104730" src="https://github.com/user-attachments/assets/570bfe0f-fad7-4469-9870-a57d511a6ac2" />
+</details>
+
+**📽️ Demo Video: [Video Link](https://drive.google.com/file/d/1iX_3zhUcvTg_vd5YCdYTDvCCjUv-nPCv/view?usp=sharing)**
+
 ---
 
 <h2 id="features">✨ Features</h2>
